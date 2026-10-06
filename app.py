@@ -17,6 +17,7 @@ with open("config.json", encoding="utf-8") as f:
 CLASSES = CONFIG["classes"]
 NOMS = CONFIG["noms"]
 SEUIL_CONFIANCE = 0.60     # en dessous, on prévient que le modèle hésite
+EQUIPE = "Prénom NOM & Prénom NOM"   # à remplacer par les noms du binôme
 
 # Conseil affiché selon l'espèce prédite : (fonction d'affichage Streamlit, texte)
 CONSEILS = {
@@ -40,8 +41,8 @@ CONSEILS = {
 # ---------------------------------------------------------------------------
 @st.cache_resource
 def charger_modele():
-    modele = models.efficientnet_b2(weights=None)
-    modele.classifier = nn.Sequential(
+    modele = models.efficientnet_b2(weights=None)          # structure seule
+    modele.classifier = nn.Sequential(                      # notre tête, identique à l'entraînement
         nn.Linear(1408, 256),
         nn.ReLU(),
         nn.Dropout(0.3),
@@ -49,8 +50,8 @@ def charger_modele():
     )
     poids = torch.load("modele_frelon.pt", map_location="cpu")
     poids = {nom: (t.float() if t.is_floating_point() else t) for nom, t in poids.items()}
-    modele.load_state_dict(poids)
-    modele.eval()
+    modele.load_state_dict(poids)                           # nos poids entraînés (float16 -> float32)
+    modele.eval()                                           # mode évaluation : Dropout désactivé
     return modele
 
 
@@ -64,9 +65,9 @@ transfo = transforms.Compose([
 
 
 def predire(image):
-    x = transfo(image).unsqueeze(0)
+    x = transfo(image).unsqueeze(0)                         # [3, 288, 288] -> [1, 3, 288, 288]
     with torch.no_grad():
-        probas = torch.softmax(modele(x), dim=1)[0]
+        probas = torch.softmax(modele(x), dim=1)[0]        # 6 scores -> 6 probabilités (somme = 1)
     return probas.numpy()
 
 
@@ -84,7 +85,7 @@ with st.sidebar:
         "et volucelle zonée, une mouche qui imite le frelon"
     )
     st.warning("Outil d'aide à l'identification : il peut se tromper et ne remplace pas l'avis d'un expert.")
-    st.caption("Projet Advanced Practical Machine Learning · aivancity")
+    st.caption(f"Projet Advanced Practical Machine Learning · aivancity  \n{EQUIPE}")
 
 
 # ---------------------------------------------------------------------------
@@ -139,6 +140,7 @@ if image is not None:
     ordre = probas.argsort()[::-1]                 # indices des classes, de la plus probable à la moins probable
     meilleure = CLASSES[ordre[0]]
     confiance = float(probas[ordre[0]])
+    incertain = confiance < SEUIL_CONFIANCE
 
     st.divider()
     col_image, col_resultat = st.columns([1, 1.3])
@@ -150,15 +152,18 @@ if image is not None:
 
     with col_resultat:
         st.subheader("Résultat")
-        st.markdown(f"## {NOMS[meilleure]}")
+        st.markdown(f"## {NOMS[meilleure]}{' ?' if incertain else ''}")
         st.progress(confiance, text=f"Confiance du modèle : {confiance:.0%}")
 
-        if confiance < SEUIL_CONFIANCE:
-            st.warning(f"🤔 Le modèle hésite (confiance {confiance:.0%}). Essayez une photo plus nette, "
-                       "où l'insecte occupe une plus grande partie de l'image.")
-
-        afficher, texte = CONSEILS[meilleure]
-        afficher(texte)
+        if incertain:
+            seconde = CLASSES[ordre[1]]            # deuxième espèce la plus probable
+            st.warning(f"🤔 **Identification incertaine** : le modèle hésite entre "
+                       f"**{NOMS[meilleure]}** ({confiance:.0%}) et "
+                       f"**{NOMS[seconde]}** ({probas[ordre[1]]:.0%}). "
+                       "Essayez une photo plus nette, où l'insecte occupe une plus grande partie de l'image.")
+        else:
+            afficher, texte = CONSEILS[meilleure]
+            afficher(texte)
 
         st.markdown("**Détail des probabilités**")
         for i in ordre:
