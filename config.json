@@ -1,0 +1,30 @@
+{
+  "classes": [
+    "frelon_asiatique",
+    "frelon_europeen",
+    "guepe",
+    "abeille",
+    "bourdon",
+    "volucelle"
+  ],
+  "noms": {
+    "frelon_asiatique": "Frelon asiatique (Vespa velutina)",
+    "frelon_europeen": "Frelon européen (Vespa crabro)",
+    "guepe": "Guêpe (Vespula sp.)",
+    "abeille": "Abeille domestique (Apis mellifera)",
+    "bourdon": "Bourdon terrestre (Bombus terrestris)",
+    "volucelle": "Volucelle zonée (Volucella zonaria)"
+  },
+  "taille": 288,
+  "moyenne": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "ecart_type": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "precision_test": 0.827
+}
