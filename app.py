@@ -17,7 +17,7 @@ with open("config.json", encoding="utf-8") as f:
 CLASSES = CONFIG["classes"]
 NOMS = CONFIG["noms"]
 SEUIL_CONFIANCE = 0.60     # en dessous, on prévient que le modèle hésite
-EQUIPE = "Prénom NOM & Prénom NOM"   # à remplacer par les noms du binôme
+EQUIPE = "Rahma Lassoued"  
 
 # Conseil affiché selon l'espèce prédite : (fonction d'affichage Streamlit, texte)
 CONSEILS = {
