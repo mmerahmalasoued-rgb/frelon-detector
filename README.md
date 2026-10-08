@@ -5,7 +5,7 @@
 👉 **Application en ligne : https://frelon-detector.streamlit.app**
 
 Projet du cours *Advanced Practical Machine Learning* (Pr. Souheil Hanoune), aivancity School of AI & Data.
-Équipe : Prénom NOM & Prénom NOM
+Équipe : Rahma Lassoued
 
 ---
 
